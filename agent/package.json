@@ -19,6 +19,7 @@
   "homepage": "https://github.com/developersworkspace/OpenSights.Server#readme",
   "dependencies": {
     "@types/winston": "^2.2.0",
+    "bases": "^0.2.1",
     "crypto": "0.0.3",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",

@@ -20,7 +20,7 @@ let agent = new Agent();
 
 function getParameters() {
     return new Promise((resolve, reject) => {
-        request(' http://www.mocky.io/v2/58c6875c100000d70e1b7be4', function (error, response, body) {
+        request('http://www.mocky.io/v2/58c6a1cc10000065111b7c4a', function (error, response, body) {
 
             if (response.statusCode == 200) {
                 resolve(JSON.parse(body));
@@ -32,9 +32,10 @@ function getParameters() {
 }
 
 getParameters().then((result: any) => {
-    let r = agent.compute(result.startingString, result.steps, result.match);
+    let r = agent.compute(result.seedNumber, result.numberOfSteps, result.match);
     console.log(r);
 });
+
 
 
 

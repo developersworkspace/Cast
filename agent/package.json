@@ -1,0 +1,33 @@
+{
+  "name": "agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "gulp build:dev & node ./src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/developersworkspace/OpenSights.Server.git"
+  },
+  "author": "Barend Erasmus",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/developersworkspace/OpenSights.Server/issues"
+  },
+  "homepage": "https://github.com/developersworkspace/OpenSights.Server#readme",
+  "dependencies": {
+    "@types/winston": "^2.2.0",
+    "crypto": "0.0.3",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-rename": "^1.2.2",
+    "gulp-typescript": "^3.1.4",
+    "node-schedule": "^1.2.0",
+    "request": "^2.81.0",
+    "run-sequence": "^1.2.2",
+    "typescript": "^2.1.5",
+    "winston": "^2.3.1"
+  }
+}

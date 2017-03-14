@@ -21,6 +21,7 @@
     "mocha": "^3.2.0",
     "mongo-mock": "^2.1.1",
     "mongodb": "^2.2.24",
+    "mongomock": "^0.1.2",
     "ts-node": "^2.1.0",
     "typescript": "^2.1.5"
   }

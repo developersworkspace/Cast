@@ -45,5 +45,8 @@ npm install
 # Add cron job
 crontab -l | { cat; echo "@reboot /usr/bin/sudo -H /usr/bin/forever start /castAgent/app.js"; } | crontab -
 
+# Start agent
+/usr/bin/sudo -H /usr/bin/forever start /castAgent/app.js
+
 
 

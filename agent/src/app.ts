@@ -18,10 +18,12 @@ function getNextItemToProcess() {
     return new Promise((resolve, reject) => {
         request('http://localhost:3000/api/cast/nextItem', function (error, response, body) {
 
-            if (response.statusCode == 200) {
+            if (error) {
+                reject(error);
+            } else if (response.statusCode == 200) {
                 resolve(JSON.parse(body));
             } else {
-                reject(error);
+                reject(new Error(`Status Code: ${response.statusCode} Body: ${body}`));
             }
         });
     });
@@ -39,10 +41,12 @@ function sendProcessedResult(uuid: string, answer: any) {
             json: true
         }, function (error, response, body) {
 
-            if (response.statusCode == 200) {
+            if (error) {
+                reject(error);
+            } else if (response.statusCode == 200) {
                 resolve(JSON.parse(body));
             } else {
-                reject(error);
+                reject(new Error(`Status Code: ${response.statusCode} Body: ${body}`));
             }
         });
     });
@@ -50,6 +54,11 @@ function sendProcessedResult(uuid: string, answer: any) {
 
 var j = schedule.scheduleJob('*/5 * * * * *', function () {
     getNextItemToProcess().then((item: any) => {
+        logger.info('Processing');
+        if (item == null) {
+            logger.info(`Nothing to process`);
+            return false;
+        }
 
         let answer = agent.compute(item.seedNumber, item.numberOfSteps, item.match);
         logger.info(`Processed ${item.seedNumber} (${answer != null})`);
@@ -57,8 +66,13 @@ var j = schedule.scheduleJob('*/5 * * * * *', function () {
         return sendProcessedResult(item.uuid, answer);
     }).then((result: Boolean) => {
 
+    }).catch((err: Error) => {
+
+        logger.error(err.message);
     });
 });
+
+
 
 
 

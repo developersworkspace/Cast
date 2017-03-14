@@ -7,7 +7,7 @@ import { config } from './../config';
 
 export class CastService {
 
-    constructor(private mongoClient: mongodb.MongoClient) {
+    constructor(private mongoClient: any) {
 
     }
 
@@ -18,12 +18,19 @@ export class CastService {
                 return this.findItemByHighestNextSeedNumber();
             }
             return result;
-        }).then((result: Item) => {
+        }).then((item: Item) => {
 
-            if (result == null) {
+            if (item == null) {
                 return null;
-            } else if (result.hasBeenProcess) {
-                let newItem = new Item(result.match, result.nextSeedNumber, numberOfSteps);
+            }
+
+            if (item.hasBeenProcess || (!item.hasBeenProcess && item.lastProcessedTime > this.getUTCMiliseconds() - 5000)) {
+
+                if (item.matchHasAnswer) {
+                    return null;
+                }
+
+                let newItem = new Item(item.match, item.nextSeedNumber, numberOfSteps);
                 newItem.lastProcessedTime = this.getUTCMiliseconds();
 
                 this.insertItem(newItem).then((result: any) => {
@@ -31,23 +38,15 @@ export class CastService {
                 });
 
                 return newItem;
-            } else if (!result.hasBeenProcess && result.lastProcessedTime > this.getUTCMiliseconds() - 5000) {
+            }
 
-                let newItem = new Item(result.match, result.nextSeedNumber, numberOfSteps);
-                newItem.lastProcessedTime = this.getUTCMiliseconds();
-
-                this.insertItem(newItem).then((result: any) => {
-
-                });
-
-                return newItem;
-            } else if (!result.hasBeenProcess) {
-                result.lastProcessedTime = this.getUTCMiliseconds();
-                this.updateItem(result).then((result: any) => {
+            if (!item.hasBeenProcess) {
+                item.lastProcessedTime = this.getUTCMiliseconds();
+                this.updateItem(item).then((result: any) => {
 
                 });
 
-                return result;
+                return item;
             }
         });
     }
@@ -66,8 +65,49 @@ export class CastService {
                 item.answer = answer;
                 item.hasBeenProcess = true;
 
-                return this.updateItem(item);
+                return this.updateItem(item).then((result: Boolean) => {
+                    if (item.answer == null) {
+                        return true;
+                    } else {
+                        return this.setMatchHasAnswerToTrue(item.match);
+                    }
+                })
             }
+        });
+    }
+
+    public listAnswers() {
+        let database: mongodb.Db;
+        return this.mongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
+            database = db;
+            let collection = database.collection('items');
+
+            return collection.find({
+                answer: { $ne: null }
+            });
+        }).then((result: mongodb.Cursor<Item>) => {
+            return result.toArray();
+        }).then((result: Item[]) => {
+            database.close();
+            return result;
+        });
+    }
+
+    private setMatchHasAnswerToTrue(match: string) {
+        let database: mongodb.Db;
+        return this.mongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
+            database = db;
+            let collection = database.collection('items');
+            return collection.updateMany({
+                match: match
+            }, {
+                    $set: {
+                        matchHasAnswer: true
+                    }
+                });
+        }).then((result: any) => {
+            database.close();
+            return true;
         });
     }
 
@@ -129,7 +169,9 @@ export class CastService {
             database = db;
             let collection = database.collection('items');
 
-            return collection.find({}).sort({
+            return collection.find({
+                matchHasAnswer: false
+            }).sort({
                 nextSeedNumber: -1
             });
         }).then((result: mongodb.Cursor<Item>) => {
@@ -186,13 +228,14 @@ export class CastService {
     }
 }
 
-class Item {
+export class Item {
 
     public nextSeedNumber: number;
     public lastProcessedTime: number;
     public hasBeenProcess: Boolean;
     public answer: any;
     public uuid: string;
+    public matchHasAnswer: Boolean;
 
     constructor(
         public match: string,
@@ -203,6 +246,7 @@ class Item {
         this.nextSeedNumber = seedNumber + numberOfSteps;
         this.hasBeenProcess = false;
         this.answer = null;
+        this.matchHasAnswer = false;
     }
 
     private guid() {

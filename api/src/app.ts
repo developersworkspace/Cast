@@ -43,6 +43,18 @@ export class WebApi {
     }
 }
 
+import * as mongodb from 'mongodb';
+
+let database: mongodb.Db;
+mongodb.MongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
+    database = db;
+    let collection = database.collection('items');
+    return collection.remove({});
+}).then((result: any) => {
+    database.close();
+    return true;
+});
+
 let port = 3000;
 let api = new WebApi(express(), port);
 api.run();

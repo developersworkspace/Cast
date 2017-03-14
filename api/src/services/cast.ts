@@ -11,11 +11,11 @@ export class CastService {
 
     }
 
-    public getParameters(numberOfSteps: number): Promise<any> {
+    public nextItem(numberOfSteps: number): Promise<Item> {
 
         return this.findUnprocessedItem().then((result: Item) => {
             if (result == null) {
-                return this.findTopItem();
+                return this.findItemByHighestNextSeedNumber();
             }
             return result;
         }).then((result: Item) => {
@@ -26,7 +26,7 @@ export class CastService {
                 let newItem = new Item(result.match, result.nextSeedNumber, numberOfSteps);
                 newItem.lastProcessedTime = this.getUTCMiliseconds();
 
-                this.insertNewItem(newItem).then((result: any) => {
+                this.insertItem(newItem).then((result: any) => {
 
                 });
 
@@ -36,7 +36,7 @@ export class CastService {
                 let newItem = new Item(result.match, result.nextSeedNumber, numberOfSteps);
                 newItem.lastProcessedTime = this.getUTCMiliseconds();
 
-                this.insertNewItem(newItem).then((result: any) => {
+                this.insertItem(newItem).then((result: any) => {
 
                 });
 
@@ -52,17 +52,26 @@ export class CastService {
         });
     }
 
-    public newItem(match: string) {
+    public saveNewItem(match: string): Promise<Boolean> {
         let item = new Item(match, 0, 100);
 
-        return this.insertNewItem(item);
+        return this.insertItem(item);
     }
 
-    public result(uuid: string, answer: any) {
-        return null;
+    public saveProcessedResult(uuid: string, answer: any): Promise<Boolean> {
+        return this.findItemByUUID(uuid).then((item: Item) => {
+            if (item == null) {
+                return false;
+            } else {
+                item.answer = answer;
+                item.hasBeenProcess = true;
+
+                return this.updateItem(item);
+            }
+        });
     }
 
-    private updateItem(item: Item) {
+    private updateItem(item: Item): Promise<Boolean> {
         let database: mongodb.Db;
         return this.mongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
             database = db;
@@ -76,7 +85,7 @@ export class CastService {
         });
     }
 
-    private insertNewItem(item: Item) {
+    private insertItem(item: Item): Promise<Boolean> {
         let database: mongodb.Db;
         return this.mongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
             database = db;
@@ -88,7 +97,33 @@ export class CastService {
         });
     }
 
-    private findTopItem() {
+    private findItemByUUID(uuid: string): Promise<Item> {
+        let database: mongodb.Db;
+        return this.mongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
+            database = db;
+            let collection = database.collection('items');
+
+            return collection.findOne({
+                uuid: uuid
+            });
+        }).then((result: any) => {
+            database.close();
+
+            if (result == null) {
+                return null;
+            }
+
+            let item = new Item(result.match, result.seedNumber, result.numberOfSteps);
+            item.answer = result.answer;
+            item.hasBeenProcess = result.hasBeenProcess;
+            item.lastProcessedTime = result.lastProcessedTime;
+            item.uuid = result.uuid;
+
+            return item;
+        });
+    }
+
+    private findItemByHighestNextSeedNumber(): Promise<Item> {
         let database: mongodb.Db;
         return this.mongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
             database = db;
@@ -116,7 +151,7 @@ export class CastService {
         });
     }
 
-    private findUnprocessedItem() {
+    private findUnprocessedItem(): Promise<Item> {
         let database: mongodb.Db;
         return this.mongoClient.connect(config.datastores.mongo.uri).then((db: mongodb.Db) => {
             database = db;
@@ -145,7 +180,7 @@ export class CastService {
     }
 
 
-    private getUTCMiliseconds() {
+    private getUTCMiliseconds(): number {
         let dateTime = new Date();
         return (dateTime.getTime() + dateTime.getTimezoneOffset() * 60 * 1000);
     }

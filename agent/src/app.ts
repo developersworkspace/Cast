@@ -14,13 +14,9 @@ import { Agent } from './agent';
 
 let agent = new Agent();
 
-// var j = schedule.scheduleJob('*/1 * * * *', function () {
-
-// });
-
-function getParameters() {
+function getNextItemToProcess() {
     return new Promise((resolve, reject) => {
-        request('http://www.mocky.io/v2/58c6a1cc10000065111b7c4a', function (error, response, body) {
+        request('http://localhost:3000/api/cast/nextItem', function (error, response, body) {
 
             if (response.statusCode == 200) {
                 resolve(JSON.parse(body));
@@ -31,10 +27,43 @@ function getParameters() {
     });
 }
 
-getParameters().then((result: any) => {
-    let r = agent.compute(result.seedNumber, result.numberOfSteps, result.match);
-    console.log(r);
+function sendProcessedResult(uuid: string, answer: any) {
+    return new Promise((resolve, reject) => {
+        request({
+            method: 'POST',
+            uri: 'http://localhost:3000/api/cast/result',
+            body: {
+                uuid: uuid,
+                answer: answer
+            },
+            json: true
+        }, function (error, response, body) {
+
+            if (response.statusCode == 200) {
+                resolve(JSON.parse(body));
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
+var j = schedule.scheduleJob('*/5 * * * * *', function () {
+    getNextItemToProcess().then((item: any) => {
+
+        let answer = agent.compute(item.seedNumber, item.numberOfSteps, item.match);
+        logger.info(`Processed ${item.seedNumber} (${answer != null})`);
+
+        return sendProcessedResult(item.uuid, answer);
+    }).then((result: Boolean) => {
+
+    });
 });
+
+
+
+
+
 
 
 

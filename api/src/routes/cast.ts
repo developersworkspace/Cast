@@ -8,18 +8,18 @@ import { CastService } from './../services/cast';
 
 let router = express.Router();
 
-router.get('/parameters', (req: Request, res: Response, next: Function) => {
+router.get('/nextItem', (req: Request, res: Response, next: Function) => {
     let castService = new CastService(mongodb.MongoClient);
 
-    castService.getParameters(100).then((result: any) => {
-        res.json(result);
+    castService.nextItem(2000).then((item: any) => {
+        res.json(item);
     });
 });
 
 router.get('/new', (req: Request, res: Response, next: Function) => {
     let castService = new CastService(mongodb.MongoClient);
 
-    castService.newItem('hello').then((result: any) => {
+    castService.saveNewItem('31a841af7b2f732799f0457318848625089a63a7').then((result: any) => {
         res.json(result);
     });
 });
@@ -27,7 +27,7 @@ router.get('/new', (req: Request, res: Response, next: Function) => {
 router.post('/result', (req: Request, res: Response, next: Function) => {
     let castService = new CastService(mongodb.MongoClient);
 
-    castService.result(req.body.uuid, req.body.answer).then((result: any) => {
+    castService.saveProcessedResult(req.body.uuid, req.body.answer).then((result: any) => {
         res.json(result);
     });
 });

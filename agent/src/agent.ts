@@ -10,7 +10,7 @@ export class Agent {
     }
 
 
-    compute(seedNumber: string, numberOfSteps: number, match: string) {
+    compute(seedNumber: number, numberOfSteps: number, match: string) {
         for (let i = 0; i < numberOfSteps; i++) {
             let workingString = bases.toAlphabet(seedNumber + i, this.characters);
 

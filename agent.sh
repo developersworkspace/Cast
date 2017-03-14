@@ -34,7 +34,7 @@ npm run build
 mkdir /castAgent
 
 # Copy dist to bin directory
-cp -R ./dist /castAgent
+cp -R ./dist/ /castAgent/
 
 # Change to bin directory
 cd /castAgent

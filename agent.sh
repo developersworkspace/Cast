@@ -31,22 +31,19 @@ npm install
 npm run build
 
 # Create bin directory
-
 mkdir /castAgent
 
 # Copy dist to bin directory
-
-cp ./dist /castAgent
+cp -R ./dist /castAgent
 
 # Change to bin directory
-
 cd /castAgent
 
 # Install node packages for 'agent'
 npm install
 
 # Add cron job
-# crontab -l | { cat; echo "@reboot /usr/bin/sudo -u pi -H /usr/local/bin/forever start /var/www/simple-server.js"; } | crontab -
+crontab -l | { cat; echo "@reboot /usr/bin/sudo -H /usr/bin/forever start /castAgent/app.js"; } | crontab -
 
 
 

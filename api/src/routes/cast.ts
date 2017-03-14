@@ -21,7 +21,7 @@ router.get('/nextItem', (req: Request, res: Response, next: Function) => {
 router.get('/new', (req: Request, res: Response, next: Function) => {
     let castService = new CastService(mongodb.MongoClient);
 
-    castService.saveNewItem('2c61ebff5a7f675451467527df66788d').then((result: any) => {
+    castService.saveNewItem(req.query.match).then((result: any) => {
         res.json(result);
     }).catch((err: Error) => {
         res.status(500).send(err.message);

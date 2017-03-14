@@ -16,7 +16,7 @@ let agent = new Agent();
 
 function getNextItemToProcess() {
     return new Promise((resolve, reject) => {
-        request('http://localhost:3000/api/cast/nextItem', function (error, response, body) {
+        request(config.api.uri +  '/cast/nextItem', function (error, response, body) {
 
             if (error) {
                 reject(error);
@@ -33,7 +33,7 @@ function sendProcessedResult(uuid: string, answer: any) {
     return new Promise((resolve, reject) => {
         request({
             method: 'POST',
-            uri: 'http://localhost:3000/api/cast/result',
+            uri: config.api.uri + '/cast/result',
             body: {
                 uuid: uuid,
                 answer: answer

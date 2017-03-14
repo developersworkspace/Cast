@@ -6,7 +6,14 @@ Compute Across Servers
 
 ### One-line Install
 
+#### API
+
 `bash <(curl -s https://raw.githubusercontent.com/developersworkspace/Cast/master/install.sh)`
+
+#### Agent
+
+`bash <(curl -s https://raw.githubusercontent.com/developersworkspace/Cast/master/agent.sh)`
+
 
 The MIT License (MIT)
 =====================
